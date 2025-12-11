@@ -1,0 +1,13 @@
+{
+  "name": "nsuem_algorithms_complexity_analysis_4course",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "bun-types": "^1.3.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
