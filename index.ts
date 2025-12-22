@@ -66,6 +66,12 @@ import {
   testBuildTree,
   testValidTree,
 } from "./src/chapter_7/section_2/task_1";
+import {
+  demonstrateLargeExample,
+  generateSequencesRecursive,
+  printSequences,
+  testSequences,
+} from "./src/chapter_7/section_3/task_1";
 
 const main = () => {
   // ! Тестирование всех заданий
@@ -550,6 +556,33 @@ const main = () => {
   );
   console.log(
     "Это делает дерево некорректным с точки зрения классического определения дерева."
+  );
+
+  console.log("\n=== Задание 7.3.1 ===");
+  testSequences();
+  demonstrateLargeExample();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 7.3.1 ===");
+
+  console.log("1. Последовательности длины 2 из чисел {1, 2}:");
+  printSequences(2, 2);
+
+  console.log("\n2. Последовательности длины 3 из чисел {1, 2}:");
+  printSequences(3, 2);
+
+  console.log("\n3. Последовательности длины 2 из чисел {1, 2, 3}:");
+  printSequences(2, 3);
+
+  // Сравнение с итеративной версией из главы 2
+  console.log("\n=== Сравнение с аналогичным заданием из Главы 2 ===");
+  console.log("В Главе 2, задание 2.1.1: allSequences(2, 3)");
+  console.log("Результат из Главы 2:", allSequences(2, 3));
+  console.log("Результат из Главы 7:", generateSequencesRecursive(2, 3));
+  console.log(
+    "Результаты совпадают:",
+    JSON.stringify(allSequences(2, 3)) ===
+      JSON.stringify(generateSequencesRecursive(2, 3))
   );
 };
 
