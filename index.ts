@@ -72,6 +72,29 @@ import {
   printSequences,
   testSequences,
 } from "./src/chapter_7/section_3/task_1";
+import {
+  demonstrateComplexity,
+  DirectedGraph,
+  testTopologicalSort,
+  testWithGivenFormat,
+} from "./src/chapter_7/section_4/task_2";
+import {
+  binomialCoefficientOptimized,
+  binomialCoefficientRecursive,
+  demonstrateRecursionProblem,
+  printTriangleAndExamples,
+  testBinomialCoefficients,
+} from "./src/chapter_8/section_1/task_1";
+import {
+  analyzePerformance,
+  demonstrateVisualization,
+  explainHanoiAlgorithm,
+  hanoiIterativeBitwise,
+  hanoiIterativeStack,
+  hanoiRecursive,
+  testHanoiTowers,
+  validateHanoiSolution,
+} from "./src/chapter_8/section_2/task_1";
 
 const main = () => {
   // ! Тестирование всех заданий
@@ -549,7 +572,7 @@ const main = () => {
   console.log("     / \\");
   console.log("    6   2");
   console.log("   /");
-  console.log("  7 → 7 (цикл)");
+  console.log("  7 => 7 (цикл)");
 
   console.log(
     "\n⚠️ Ответ: Дерево содержит цикл (узел 7 ссылается сам на себя)!"
@@ -584,6 +607,156 @@ const main = () => {
     JSON.stringify(allSequences(2, 3)) ===
       JSON.stringify(generateSequencesRecursive(2, 3))
   );
+
+  console.log("\n=== Задание 7.4.2 ===");
+  testTopologicalSort();
+  demonstrateComplexity();
+  testWithGivenFormat();
+
+  // Демонстрация работы алгоритма
+  console.log("\n=== Демонстрация алгоритма топологической сортировки ===");
+
+  // Пример: граф зависимостей задач
+  console.log("Пример: граф зависимостей задач");
+  const taskGraph = new DirectedGraph(7);
+
+  // Задачи и их зависимости:
+  // 1 => 2, 3 (задача 1 должна быть выполнена перед 2 и 3)
+  // 2 => 4, 5
+  // 3 => 5
+  // 4 => 6
+  // 5 => 6
+  // 6 => 7
+
+  taskGraph.addEdge(1, 2);
+  taskGraph.addEdge(1, 3);
+  taskGraph.addEdge(2, 4);
+  taskGraph.addEdge(2, 5);
+  taskGraph.addEdge(3, 5);
+  taskGraph.addEdge(4, 6);
+  taskGraph.addEdge(5, 6);
+  taskGraph.addEdge(6, 7);
+
+  console.log(taskGraph.toString());
+
+  console.log("Возможный порядок выполнения задач:");
+  const taskOrder = taskGraph.topologicalSortRecursive();
+  console.log(taskOrder.join(" => "));
+
+  console.log("\nПроверка корректности:");
+  console.log("Для каждого ребра u=>v вершина u идет перед v:");
+  const positions = new Map<number, number>();
+  taskOrder.forEach((task, index) => positions.set(task, index));
+
+  let isValid = true;
+  for (let u = 1; u <= 7; u++) {
+    for (const v of taskGraph["adr"][u]) {
+      if (positions.get(u)! > positions.get(v)!) {
+        console.log(`  Ошибка: ${u}=>${v}, но ${u} после ${v}`);
+        isValid = false;
+      }
+    }
+  }
+
+  if (isValid) {
+    console.log("  Все зависимости соблюдены!");
+  }
+
+  // ! Глава 8
+  console.log("\n=== Глава 8: Как обойтись без рекурсии ===");
+  console.log("Задание 8.1.1");
+  testBinomialCoefficients();
+  demonstrateRecursionProblem();
+  printTriangleAndExamples();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 8.1.1 ===");
+
+  console.log("1. Рекурсивное вычисление (из условия):");
+  console.log("   C(5,2) =", binomialCoefficientRecursive(5, 2));
+  console.log("   C(6,3) =", binomialCoefficientRecursive(6, 3));
+  console.log("   C(7,4) =", binomialCoefficientRecursive(7, 4));
+
+  console.log("\n2. Нерекурсивное вычисление (оптимизированный DP):");
+  console.log("   C(5,2) =", binomialCoefficientOptimized(5, 2));
+  console.log("   C(6,3) =", binomialCoefficientOptimized(6, 3));
+  console.log("   C(7,4) =", binomialCoefficientOptimized(7, 4));
+
+  console.log(
+    "\n3. Проверка на больших значениях (рекурсия будет очень медленной):"
+  );
+  console.log(
+    "   C(20,10) рекурсивно: невозможно (займет слишком много времени)"
+  );
+  console.log(
+    "   C(20,10) нерекурсивно:",
+    binomialCoefficientOptimized(20, 10)
+  );
+
+  console.log("\n4. Проверка свойства симметрии:");
+  console.log("   C(10,3) =", binomialCoefficientOptimized(10, 3));
+  console.log("   C(10,7) =", binomialCoefficientOptimized(10, 7));
+  console.log(
+    "   C(10,3) = C(10,7):",
+    binomialCoefficientOptimized(10, 3) === binomialCoefficientOptimized(10, 7)
+      ? "OK"
+      : "BAD"
+  );
+
+  console.log("\n=== Задание 8.2.1 ===");
+  testHanoiTowers();
+  explainHanoiAlgorithm();
+  demonstrateVisualization();
+  analyzePerformance();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 8.2.1 ===");
+
+  console.log("1. Рекурсивное решение (для сравнения):");
+  console.log("   Для n=3:");
+  const recursiveMoves = hanoiRecursive(3, "A", "C", "B");
+  console.log("   Ходы:", recursiveMoves.join(", "));
+  console.log("   Количество ходов:", recursiveMoves.length);
+
+  console.log("\n2. Нерекурсивное решение (с использованием стека):");
+  console.log("   Для n=3:");
+  const iterativeMoves = hanoiIterativeStack(3, "A", "C", "B");
+  console.log("   Ходы:", iterativeMoves.join(", "));
+  console.log("   Количество ходов:", iterativeMoves.length);
+  console.log("   Корректно:", validateHanoiSolution(iterativeMoves, 3));
+
+  console.log("\n3. Нерекурсивное решение (битовый алгоритм):");
+  console.log("   Для n=3:");
+  const bitwiseMoves = hanoiIterativeBitwise(3, "A", "C", "B");
+  console.log("   Ходы:", bitwiseMoves.join(", "));
+  console.log("   Количество ходов:", bitwiseMoves.length);
+  console.log("   Корректно:", validateHanoiSolution(bitwiseMoves, 3));
+
+  console.log("\n4. Сравнение рекурсивного и нерекурсивного подходов:");
+  console.log(
+    "   Рекурсивный = Стековый:",
+    JSON.stringify(recursiveMoves) === JSON.stringify(iterativeMoves)
+      ? "OK"
+      : "BAD"
+  );
+  console.log(
+    "   Все методы дают 2^3 - 1 = 7 ходов:",
+    recursiveMoves.length === 7 &&
+      iterativeMoves.length === 7 &&
+      bitwiseMoves.length === 7
+      ? "OK"
+      : "BAD"
+  );
+
+  console.log("\n5. Проверка формулы 2^n - 1 для разных n:");
+  for (let n = 1; n <= 5; n++) {
+    const moves = hanoiIterativeStack(n);
+    const expected = Math.pow(2, n) - 1;
+    console.log(`   n=${n}: ${
+      moves.length
+    } ходов, формула: 2^${n} - 1 = ${expected}, 
+    ${moves.length === expected ? "OK" : "BAD"}`);
+  }
 };
 
 main();
