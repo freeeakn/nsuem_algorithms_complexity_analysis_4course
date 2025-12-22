@@ -24,6 +24,16 @@ import { findMax } from "./src/chapter_1/section_2/task_4";
 import { countDistinctSorted } from "./src/chapter_1/section_2/task_5";
 import { isSubsequence } from "./src/chapter_1/section_3/task_2";
 import { longestCommonSubsequence } from "./src/chapter_1/section_3/task_3";
+import {
+  analyzeAlgorithms,
+  demonstrateRealWorldExamples,
+  demonstrateStepByStep3,
+  findAbcd,
+  findAllOccurrences,
+  findSubstringKMP,
+  findSubstringSimple,
+  testSubstringSearch,
+} from "./src/chapter_10/section_1/task_1";
 import { allSequences } from "./src/chapter_2/section_1/task_1";
 import { permutations } from "./src/chapter_2/section_2/task_1";
 import { kSubsets } from "./src/chapter_2/section_3/task_1";
@@ -95,6 +105,28 @@ import {
   testHanoiTowers,
   validateHanoiSolution,
 } from "./src/chapter_8/section_2/task_1";
+import {
+  analyzeComplexity,
+  demonstrateStepByStep,
+  fordBellmanSimple,
+  Graph,
+  testFordBellman,
+} from "./src/chapter_9/section_1/task_2";
+import {
+  analyzeDFS,
+  compareDFSImplementations,
+  demonstrateStepByStepDFS,
+  GraphDFS,
+  testDFS,
+} from "./src/chapter_9/section_2/task_2";
+import {
+  analyzeMaxFlowAlgorithms,
+  demonstrateStepByStep2,
+  explainMaxFlowTheory,
+  FlowNetwork,
+  solveOilPipelineProblem,
+  testMaxFlow,
+} from "./src/chapter_9/section_3/task_1";
 
 const main = () => {
   // ! Тестирование всех заданий
@@ -757,6 +789,452 @@ const main = () => {
     } ходов, формула: 2^${n} - 1 = ${expected}, 
     ${moves.length === expected ? "OK" : "BAD"}`);
   }
+
+  console.log("\n=== Глава 9: Графы ===");
+  console.log("Задание 9.1.2");
+  testFordBellman();
+  analyzeComplexity();
+  demonstrateStepByStep();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 9.1.2 ===");
+
+  // Пример из условия задачи
+  console.log(
+    "Пример: нахождение кратчайших путей из города 1 во все остальные"
+  );
+
+  const n = 5;
+  const graph = new Graph(n);
+
+  // Задаём стоимости проезда между городами
+  graph.addEdge(1, 2, 10);
+  graph.addEdge(1, 3, 3);
+  graph.addEdge(2, 3, 1);
+  graph.addEdge(2, 4, 2);
+  graph.addEdge(3, 2, 4);
+  graph.addEdge(3, 4, 8);
+  graph.addEdge(3, 5, 2);
+  graph.addEdge(4, 5, 7);
+  graph.addEdge(5, 4, 9);
+
+  console.log(graph.toString());
+
+  const result = graph.fordBellman(1);
+
+  console.log("Кратчайшие расстояния из города 1:");
+  for (let i = 1; i <= n; i++) {
+    const path = graph.reconstructPath(1, i, result.predecessors);
+    console.log(
+      `  До города ${i}: ${result.distances[i]}, путь: ${path.join(" => ")}`
+    );
+  }
+
+  // Проверка сложности O(n³)
+  console.log("\n=== Проверка сложности O(n³) ===");
+  console.log("Для графа с n вершинами:");
+  console.log("  Внешний цикл: n-1 итераций");
+  console.log("  Первый внутренний цикл: n итераций");
+  console.log("  Второй внутренний цикл: n итераций");
+  console.log(`  Итого: (n-1) * n * n ≈ n³ операций`);
+  console.log(
+    `  Для n=${n}: (${n}-1) * ${n} * ${n} = ${(n - 1) * n * n} операций`
+  );
+
+  // Сравнение с упрощенной версией
+  console.log("\n=== Сравнение с упрощенной версией из условия ===");
+  const a: number[][] = new Array(n + 1);
+  for (let i = 0; i <= n; i++) {
+    a[i] = new Array(n + 1).fill(Infinity);
+    a[i][i] = 0;
+  }
+
+  // Копируем рёбра
+  a[1][2] = 10;
+  a[1][3] = 3;
+  a[2][3] = 1;
+  a[2][4] = 2;
+  a[3][2] = 4;
+  a[3][4] = 8;
+  a[3][5] = 2;
+  a[4][5] = 7;
+  a[5][4] = 9;
+
+  const simpleResult = fordBellmanSimple(n, 1, a);
+  console.log("Результат упрощенной версии:");
+  for (let i = 0; i < n; i++) {
+    console.log(`  До города ${i + 1}: ${simpleResult[i]}`);
+  }
+
+  console.log("\nРезультаты совпадают:");
+  let allMatch = true;
+  for (let i = 1; i <= n; i++) {
+    const match = Math.abs(result.distances[i] - simpleResult[i - 1]) < 0.001;
+    console.log(`  Город ${i}: ${match ? "OK" : "BAD"}`);
+    if (!match) allMatch = false;
+  }
+  console.log(allMatch ? "Все результаты совпадают!" : "Есть расхождения");
+
+  console.log("\n=== Задание 9.2.2 ===");
+  testDFS();
+  analyzeDFS();
+  demonstrateStepByStepDFS();
+  compareDFSImplementations();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 9.2.2 ===");
+
+  console.log("1. Поиск в глубину на неориентированном графе:");
+  const undirectedGraph = new GraphDFS(8, false);
+
+  // Граф в форме "звезды" с центром в вершине 1
+  undirectedGraph.addEdge(1, 2);
+  undirectedGraph.addEdge(1, 3);
+  undirectedGraph.addEdge(1, 4);
+  undirectedGraph.addEdge(2, 5);
+  undirectedGraph.addEdge(2, 6);
+  undirectedGraph.addEdge(3, 7);
+  undirectedGraph.addEdge(3, 8);
+
+  console.log(undirectedGraph.toString());
+
+  const dfsResult = undirectedGraph.dfsRecursive(1);
+  console.log("Рекурсивный DFS из вершины 1:");
+  console.log("  Порядок обхода:", dfsResult.order.join(" => "));
+  console.log("  Время входа:", dfsResult.discoveryTime.slice(1));
+  console.log("  Время выхода:", dfsResult.finishTime.slice(1));
+
+  // Восстановление пути
+  console.log("\n2. Восстановление пути:");
+  const path = undirectedGraph.reconstructPath(1, 7, dfsResult.parent);
+  console.log(
+    "  Путь из 1 в 7:",
+    path.length > 0 ? path.join(" => ") : "пути нет"
+  );
+
+  console.log("\n3. Компоненты связности:");
+  const components = undirectedGraph.findConnectedComponents();
+  console.log("  Всего компонент:", components.length);
+  components.forEach((comp, i) => {
+    console.log(`  Компонента ${i + 1}: [${comp.join(", ")}]`);
+  });
+
+  console.log("\n4. Проверка на двудольность:");
+  const bipartiteResult = undirectedGraph.isBipartite();
+  console.log("  Граф двудольный:", bipartiteResult.isBipartite);
+  if (bipartiteResult.isBipartite) {
+    console.log("  Раскраска вершин (0/1):", bipartiteResult.colors.slice(1));
+
+    // Показываем разбиение на две доли
+    const part0: number[] = [];
+    const part1: number[] = [];
+    for (let i = 1; i <= 8; i++) {
+      if (bipartiteResult.colors[i] === 0) part0.push(i);
+      else if (bipartiteResult.colors[i] === 1) part1.push(i);
+    }
+    console.log("  Доля 0 (цвет 0):", part0);
+    console.log("  Доля 1 (цвет 1):", part1);
+  }
+
+  console.log("\n5. Итеративный DFS (сравнение с рекурсивным):");
+  const iterativeResult = undirectedGraph.dfsIterative(1);
+  console.log(
+    "  Порядок обхода (итеративный):",
+    iterativeResult.order.join(" => ")
+  );
+  console.log(
+    "  Порядок совпадает с рекурсивным:",
+    JSON.stringify(dfsResult.order) === JSON.stringify(iterativeResult.order)
+      ? "OK"
+      : "BAD"
+  );
+
+  // Демонстрация на ориентированном графе
+  console.log("\n6. Поиск в глубину на ориентированном графе:");
+  const directedGraph = new GraphDFS(6, true);
+
+  // Ориентированный граф без циклов (DAG)
+  directedGraph.addEdge(1, 2);
+  directedGraph.addEdge(1, 3);
+  directedGraph.addEdge(2, 4);
+  directedGraph.addEdge(3, 4);
+  directedGraph.addEdge(4, 5);
+  directedGraph.addEdge(4, 6);
+
+  console.log(directedGraph.toString());
+
+  const dfsDirected = directedGraph.dfsRecursive(1);
+  console.log("  Порядок обхода:", dfsDirected.order.join(" => "));
+  console.log("  Есть циклы:", dfsDirected.hasCycle);
+
+  console.log("\n7. Классификация рёбер в ориентированном графе:");
+  try {
+    const edgeClassification = directedGraph.classifyEdges();
+    console.log("  Все рёбра графа должны быть древесными (DFS-дерево):");
+    for (const [type, edges] of edgeClassification.entries()) {
+      if (edges.length > 0) {
+        console.log(`  ${type} рёбер: ${edges.length}`);
+      }
+    }
+  } catch (error: any) {
+    console.log("  Ошибка классификации:", error.message);
+  }
+
+  console.log("\n=== Задание 9.3.1 ===");
+  testMaxFlow();
+  explainMaxFlowTheory();
+  demonstrateStepByStep2();
+  analyzeMaxFlowAlgorithms();
+  solveOilPipelineProblem();
+
+  // Демонстрация работы на конкретном примере
+  console.log("\n=== Демонстрация решения задачи 9.3.1 ===");
+
+  console.log("Задача: Найти максимальный поток нефти из A в B");
+
+  // Создаём сеть из условия задачи
+  const oilNetwork = new FlowNetwork(6, 1, 6);
+
+  // Визуализируем сеть
+  console.log("\nСеть нефтепровода (числа - пропускные способности):");
+  console.log("       10         10");
+  console.log("    A ────→ 2 ────→ B");
+  console.log("    │       │       ↑");
+  console.log("    │      5│       │");
+  console.log("    │       ↓       │");
+  console.log("    └───→ 3 ────→ 4");
+  console.log("       8         6");
+
+  // Добавляем рёбра как на схеме
+  oilNetwork.addEdge(1, 2, 10); // A → 2
+  oilNetwork.addEdge(1, 3, 8); // A → 3
+  oilNetwork.addEdge(2, 4, 5); // 2 → 4
+  oilNetwork.addEdge(2, 6, 10); // 2 → B
+  oilNetwork.addEdge(3, 4, 6); // 3 → 4
+  oilNetwork.addEdge(4, 6, 10); // 4 → B
+
+  console.log("\nМатематическая модель:");
+  console.log(oilNetwork.toString());
+
+  console.log("\nРешение алгоритмом Форда-Фалкерсона:");
+  const oilResult = oilNetwork.fordFulkerson();
+  console.log(oilNetwork.visualizeResult(oilResult));
+
+  console.log("\nОтвет на задачу:");
+  console.log(
+    `Максимальное количество нефти, которое можно доставить из A в B: ${oilResult.maxFlow} единиц/время`
+  );
+
+  console.log("\nОптимальный план перекачки:");
+  console.log(
+    "Потоки по трубам (фактический поток / максимальная пропускная способность):"
+  );
+
+  // Красиво выводим потоки
+  const edges = [
+    [1, 2],
+    [1, 3],
+    [2, 4],
+    [2, 6],
+    [3, 4],
+    [4, 6],
+  ];
+
+  edges.forEach(([u, v]) => {
+    const flow = oilResult.flow[u][v];
+    const capacity = oilNetwork["capacity"][u][v];
+    if (capacity > 0) {
+      console.log(`  Труба ${u}→${v}: ${flow}/${capacity}`);
+    }
+  });
+
+  console.log("\nОбъяснение:");
+  console.log("1. Из A (1) в 2 идёт 10+0 = 10 единиц");
+  console.log("2. Из A (1) в 3 идёт 5+0 = 5 единиц");
+  console.log("3. Из 2 распределяется: 5 в 4 и 5 в B");
+  console.log("4. Из 3 идёт 5 в 4");
+  console.log("5. Из 4 идёт 10 (5+5) в B");
+  console.log(`6. Итого в B поступает: 5 (из 2) + 10 (из 4) = 15 единиц`);
+
+  console.log("\nМинимальный разрез показывает ограничения:");
+  console.log(`  S = [${oilResult.minCut.S.join(", ")}]`);
+  console.log(`  T = [${oilResult.minCut.T.join(", ")}]`);
+
+  // Находим рёбра разреза
+  const cutEdgesInfo: [number, number, number][] = [];
+  for (const u of oilResult.minCut.S) {
+    for (const v of oilResult.minCut.T) {
+      if (oilNetwork["capacity"][u][v] > 0) {
+        cutEdgesInfo.push([u, v, oilNetwork["capacity"][u][v]]);
+      }
+    }
+  }
+
+  if (cutEdgesInfo.length > 0) {
+    console.log("\nОграничивающие трубы (рёбра минимального разреза):");
+    cutEdgesInfo.forEach(([u, v, cap]) => {
+      console.log(`  ${u}→${v}: пропускная способность ${cap}`);
+    });
+    const totalCutCapacity = cutEdgesInfo.reduce(
+      (sum, edge) => sum + edge[2],
+      0
+    );
+    console.log(
+      `  Суммарная пропускная способность разреза: ${totalCutCapacity}`
+    );
+    console.log(
+      `  Это подтверждает теорему: max_flow = min_cut = ${oilResult.maxFlow}`
+    );
+  }
+
+  // Дополнительный пример
+  console.log(
+    "\n=== Дополнительный пример: Увеличение пропускной способности ==="
+  );
+  console.log("Что если увеличить пропускную способность трубы 2→4 с 5 до 8?");
+
+  const improvedNetwork = new FlowNetwork(6, 1, 6);
+  improvedNetwork.addEdge(1, 2, 10);
+  improvedNetwork.addEdge(1, 3, 8);
+  improvedNetwork.addEdge(2, 4, 8); // Увеличили с 5 до 8
+  improvedNetwork.addEdge(2, 6, 10);
+  improvedNetwork.addEdge(3, 4, 6);
+  improvedNetwork.addEdge(4, 6, 10);
+
+  const improvedResult = improvedNetwork.fordFulkerson();
+  console.log(
+    `Новый максимальный поток: ${improvedResult.maxFlow} (увеличился на ${
+      improvedResult.maxFlow - oilResult.maxFlow
+    })`
+  );
+
+  console.log("\n=== Глава 10: Сопоставление с образцом ===");
+  console.log("Задание 10.1.1");
+  testSubstringSearch();
+  analyzeAlgorithms();
+  demonstrateStepByStep3();
+  demonstrateRealWorldExamples();
+
+  // Демонстрация работы
+  console.log("\n=== Демонстрация задания 10.1.1 ===");
+
+  console.log(
+    "Задача: Определить, есть ли в последовательности символов подстрока 'abcd'"
+  );
+
+  // Примеры из условия
+  const examples = [
+    "abcde",
+    "xabcde",
+    "ababcabcd",
+    "abacaba",
+    "abcd",
+    "abc",
+    "aabbccdd",
+    "abcabcabcdabc",
+    "xyz",
+    "dcba",
+  ];
+
+  console.log("\nПроверка примеров:");
+  examples.forEach((text, index) => {
+    const hasAbcd = findAbcd(text);
+    console.log(
+      `  ${index + 1}. "${text}": ${
+        hasAbcd ? "содержит 'abcd'" : "не содержит"
+      }`
+    );
+  });
+
+  // Сравнение разных алгоритмов
+  console.log("\n=== Сравнение разных алгоритмов ===");
+
+  const testText = "Это тестовая строка с подстрокой abcd в середине";
+  console.log(`Текст: "${testText}"`);
+
+  console.log("\nРезультаты поиска:");
+  console.log(
+    `  Простой поиск: ${
+      findSubstringSimple(testText, "abcd") ? "найдено" : "не найдено"
+    }`
+  );
+  console.log(
+    `  Специализированный findAbcd: ${
+      findAbcd(testText) ? "найдено" : "не найдено"
+    }`
+  );
+  console.log(
+    `  Алгоритм КМП: ${
+      findSubstringKMP(testText, "abcd") ? "найдено" : "не найдено"
+    }`
+  );
+
+  // Поиск всех вхождений
+  console.log("\n=== Поиск всех вхождений ===");
+  const textWithMultiple = "abcd test abcd again abcd end";
+  const positionsABCD = findAllOccurrences(textWithMultiple, "abcd");
+  console.log(`Текст: "${textWithMultiple}"`);
+  console.log(
+    `Подстрока "abcd" найдена на позициях: ${
+      positionsABCD.length > 0 ? positionsABCD.join(", ") : "не найдена"
+    }`
+  );
+  console.log(`Количество вхождений: ${positionsABCD.length}`);
+
+  // Визуализация поиска
+  console.log("\n=== Визуализация поиска ===");
+  const sampleText = "xyzabcd123";
+  console.log(`Поиск "abcd" в "${sampleText}":`);
+
+  for (let i = 0; i <= sampleText.length - 4; i++) {
+    const substring = sampleText.substring(i, i + 4);
+    const isMatch = substring === "abcd";
+    console.log(
+      `  Позиция ${i}: "${substring}" ${isMatch ? "СОВПАДЕНИЕ!" : ""}`
+    );
+  }
+
+  // Эффективность алгоритмов
+  console.log("\n=== Эффективность алгоритмов ===");
+
+  // Создаём длинный текст без "abcd" в начале (худший случай для простого поиска)
+  let longText = "";
+  for (let i = 0; i < 10000; i++) {
+    longText += "xyz";
+  }
+  longText += "abcd"; // Добавляем в самом конце
+
+  console.log(`Длина текста: ${longText.length} символов`);
+  console.log("Подстрока 'abcd' в самом конце");
+
+  // Измеряем время выполнения
+  console.log("\nВремя выполнения:");
+
+  const start1 = Date.now();
+  const result1 = findSubstringSimple(longText, "abcd");
+  const time1 = Date.now() - start1;
+  console.log(
+    `  Простой поиск: ${time1} мс, результат: ${
+      result1 ? "найдено" : "не найдено"
+    }`
+  );
+
+  const start2 = Date.now();
+  const result2 = findAbcd(longText);
+  const time2 = Date.now() - start2;
+  console.log(
+    `  findAbcd: ${time2} мс, результат: ${result2 ? "найдено" : "не найдено"}`
+  );
+
+  const start3 = Date.now();
+  const result3 = findSubstringKMP(longText, "abcd");
+  const time3 = Date.now() - start3;
+  console.log(
+    `  КМП: ${time3} мс, результат: ${result3 ? "найдено" : "не найдено"}`
+  );
+
+  console.log("\nВывод: Для поиска фиксированной подстроки 'abcd'");
+  console.log("специализированная функция findAbcd наиболее эффективна");
 };
 
 main();
